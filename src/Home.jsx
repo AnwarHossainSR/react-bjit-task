@@ -1,26 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Table } from "react-bootstrap";
 import "../node_modules/font-awesome/css/font-awesome.min.css";
 import Header from "./Header";
-import Swal from "sweetalert2";
-//Bootstrap and jQuery libraries
-import "bootstrap/dist/css/bootstrap.min.css";
-import "jquery/dist/jquery.min.js";
-//Datatable Modules
-import "datatables.net-dt/js/dataTables.dataTables";
-import "datatables.net-dt/css/jquery.dataTables.min.css";
-import { products } from "./UserData";
+import DataContext from './store/DataContext'
 
 const Home = () => {
-  const [data, setData] = useState([]);
-  useEffect(() => {
-    getData();
-  }, []);
-
-  async function getData() {
-    setData(products);
-  }
+  const [data, setData] = useState( [] );
+  const ctxData = useContext( DataContext )
+  useEffect( () => {
+    console.log("called useEffect hook")
+    setData(ctxData._currentValue.data);
+    //calbackExample()
+  }, [data] );
+  
+  const calbackExample = useCallback(
+    () => {
+      console.log("called useCallback hook")
+      setData(ctxData._currentValue.data);
+    },
+    []
+  );
+  
 
   return (
     <div>
@@ -30,6 +31,7 @@ const Home = () => {
           <div className="row">
             <div className="col-md-10 offset-1">
               <h1 className="text-center text-primary py-3">All Products</h1>
+              <button className="btn btn-primary mb-3" onClick={calbackExample}>Refresh with useCallback</button>
               <Table id="example" striped hover>
                 <thead>
                   <tr>
@@ -41,8 +43,8 @@ const Home = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.map((item) => (
-                    <tr>
+                  {data.map((item,i) => (
+                    <tr key={i}>
                       <td>{item.id}</td>
                       <td>{item.name}</td>
                       <td>{item.price}</td>
