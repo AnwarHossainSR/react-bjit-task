@@ -2,82 +2,98 @@ import React, { useState, useEffect, useReducer } from "react";
 import { useHistory } from "react-router-dom";
 import Header from "./Header";
 
-const emailReducer = ( state, action ) => {
-    var pattern = new RegExp(
-      /^(("[\w-\s]+")|([\w-]+(?:\.[\w-]+)*)|("[\w-\s]+")([\w-]+(?:\.[\w-]+)*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$)|(@\[?((25[0-5]\.|2[0-4][0-9]\.|1[0-9]{2}\.|[0-9]{1,2}\.))((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\]?$)/i
+const emailReducer = (state, action) => {
+  var pattern = new RegExp(
+    /^(("[\w-\s]+")|([\w-]+(?:\.[\w-]+)*)|("[\w-\s]+")([\w-]+(?:\.[\w-]+)*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$)|(@\[?((25[0-5]\.|2[0-4][0-9]\.|1[0-9]{2}\.|[0-9]{1,2}\.))((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\]?$)/i
   );
-  
-    if (action.val.length == 0) {
-      return { value: action.val, isValid: "Email is required", type: action.type };
-    }
-    if( !pattern.test( action.val ) ) {
-      return { value: action.val, isValid: "please provide a valid email address", type: action.type };
-    }
-  
+
+  if (action.val.length === 0) {
+    return {
+      value: action.val,
+      isValid: "Email is required",
+      type: action.type,
+    };
+  }
+  if (!pattern.test(action.val)) {
+    return {
+      value: action.val,
+      isValid: "please provide a valid email address",
+      type: action.type,
+    };
+  }
+
   return { value: action.val, isValid: true, type: action.type };
 };
 
-const passwordReducer = ( state, action ) => {
-    if (action.val.length == 0) {
-      return { value: action.val, isValid: "Password is required", type: action.type };
-    }
-    if ( action.val.length < 6 ) {
-      return { value: action.val, isValid: "Password must be grater than 6", type: action.type };
-    }
-  
-    return { value: action.val, isValid: true, type: action.type };
+const passwordReducer = (state, action) => {
+  if (action.val.length === 0) {
+    return {
+      value: action.val,
+      isValid: "Password is required",
+      type: action.type,
+    };
+  }
+  if (action.val.length < 6) {
+    return {
+      value: action.val,
+      isValid: "Password must be grater than 6",
+      type: action.type,
+    };
+  }
+
+  return { value: action.val, isValid: true, type: action.type };
 };
 
-const Login = ( props ) => {
-  console.log('Login COmponet rendering with React.memo()')
+const Login = (props) => {
+  //console.log("Login COmponet rendering with React.memo()");
 
   const data = props.data;
-  const [formIsValid, setFormIsValid] = useState( false );
+  const [formIsValid, setFormIsValid] = useState(false);
   const [emailState, dispatchEmail] = useReducer(emailReducer, {
-    value: '',
+    value: "",
     isValid: null,
-    type: '',
+    type: "",
   });
   const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
-    value: '',
+    value: "",
     isValid: null,
-    type: '',
-  } );
+    type: "",
+  });
   const { isValid: emailIsValid } = emailState;
   const { isValid: passwordIsValid } = passwordState;
-  const [error, setErrorMessage] = useState('')
+  const [error, setErrorMessage] = useState("");
   const histry = useHistory();
 
-  useEffect( () => {
+  useEffect(() => {
     if (localStorage.getItem("user-info")) {
       histry.push("/");
     }
-    setFormIsValid( emailIsValid && passwordIsValid );
+    setFormIsValid(emailIsValid && passwordIsValid);
     // return () => {
     // };
-  }, [emailIsValid, passwordIsValid]);
+  }, [emailIsValid, passwordIsValid, histry]);
 
   const emailChangeHandler = (event) => {
-    dispatchEmail({ type: 'email', val: event.target.value });
+    dispatchEmail({ type: "email", val: event.target.value });
   };
 
   const passwordChangeHandler = (event) => {
-    dispatchPassword({ type: 'password', val: event.target.value });
+    dispatchPassword({ type: "password", val: event.target.value });
   };
 
   async function validate() {
     let item = { email: emailState.value, password: passwordState.value };
-    data.filter(
-            (user) =>
-              user.email === item.email && user.password === item.password
-          )
-          .map((filteredPerson) => {
-            localStorage.setItem("user-info", JSON.stringify(filteredPerson));
-            histry.push("/");
-          });
-        if (!localStorage.getItem("user-info")) {
-          setErrorMessage("Email or password is not matched");
-        }
+    data
+      .filter(
+        (user) => user.email === item.email && user.password === item.password
+      )
+      .map((filteredPerson) => {
+        localStorage.setItem("user-info", JSON.stringify(filteredPerson));
+        histry.push("/");
+      });
+    if (!localStorage.getItem("user-info")) {
+      setErrorMessage("Email or password is not matched");
+    }
   }
 
   return (
@@ -95,7 +111,9 @@ const Login = ( props ) => {
           onChange={emailChangeHandler}
           className="form-control"
         />
-        <label className="text-danger float-left">{emailState.isValid && emailState.isValid}</label>
+        <label className="text-danger float-left">
+          {emailState.isValid && emailState.isValid}
+        </label>
         <br />
         <label className="float-left">Password</label>
         <input
@@ -105,7 +123,9 @@ const Login = ( props ) => {
           className="form-control"
         />
         <br />
-        <label className="text-danger float-left">{passwordState.isValid && passwordState.isValid}</label>
+        <label className="text-danger float-left">
+          {passwordState.isValid && passwordState.isValid}
+        </label>
         <button
           type="submit"
           onClick={validate}
@@ -117,6 +137,6 @@ const Login = ( props ) => {
       </div>
     </>
   );
-}
+};
 
 export default React.memo(Login);

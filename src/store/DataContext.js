@@ -1,8 +1,9 @@
-import React from 'react'
-import { products } from '../UserData'
+import React from "react";
+import { fetchPosts, fetchPost, fetchPostComments } from "../api/api";
 
-const DataContext = React.createContext( {
-     data:products
-})
+const DataContext = React.createContext({
+  postComments: fetchPostComments(),
+  fetchPost: fetchPost(),
+});
 
-export default DataContext
+export default DataContext;

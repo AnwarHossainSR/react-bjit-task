@@ -1,68 +1,104 @@
 import React, { useEffect, useState, useContext, useCallback } from "react";
-import { Link } from "react-router-dom";
-import { Table } from "react-bootstrap";
+import { useHistory, Link, useLocation } from "react-router-dom";
 import "../node_modules/font-awesome/css/font-awesome.min.css";
 import Header from "./Header";
-import DataContext from './store/DataContext'
+//import DataContext from "./store/DataContext";
+import { fetchPosts } from "./api/api";
+
+const sortPosts = (quotes, ascending) => {
+  return quotes.sort((postA, postB) => {
+    if (ascending) {
+      return postA.id > postB.id ? 1 : -1;
+    } else {
+      return postA.id < postB.id ? 1 : -1;
+    }
+  });
+};
 
 const Home = () => {
-  const [data, setData] = useState( [] );
-  const ctxData = useContext( DataContext )
-  useEffect( () => {
-    console.log("called useEffect hook")
-    setData(ctxData._currentValue.data);
+  const history = useHistory();
+  const location = useLocation();
+  const [posts, setPosts] = useState([]);
+  const queryParams = new URLSearchParams(location.search);
+  const isSortingAscending = queryParams.get("sort") === "asc";
+  const sortedQuotes = sortPosts(posts, isSortingAscending);
+  //setPosts(sortedQuotes);
+  //const ctxData = useContext(DataContext);
+  useEffect(() => {
+    const posts = async () => {
+      const data = await (await fetchPosts()).data;
+      setPosts(data);
+    };
+    posts();
+    //setData(ctxData);
     //calbackExample()
-  }, [data] );
-  
-  const calbackExample = useCallback(
-    () => {
-      console.log("called useCallback hook")
-      setData(ctxData._currentValue.data);
-    },
-    []
-  );
-  
+  }, [posts]);
+
+  // const calbackExample = useCallback(() => {
+  //   console.log("called useCallback hook");
+  //   setData(ctxData);
+  // }, [ctxData]);
+
+  const deletePost = (id) => {
+    // fetch("https://jsonplaceholder.typicode.com/posts/" + id, {
+    //   method: "DELETE",
+    // });
+  };
+  const changeSortingHandler = () => {
+    history.push("/posts?sort=" + (isSortingAscending ? "desc" : "asc"));
+    // history.push({
+    //   pathname: location.pathname,
+    //   search: `?sort=${(isSortingAscending ? 'desc' : 'asc')}`
+    // });
+  };
 
   return (
     <div>
       <Header />
       {localStorage.getItem("user-info") ? (
-        <div className="container">
-          <div className="row">
-            <div className="col-md-10 offset-1">
-              <h1 className="text-center text-primary py-3">All Products</h1>
-              <button className="btn btn-primary mb-3" onClick={calbackExample}>Refresh with useCallback</button>
-              <Table id="example" striped hover>
-                <thead>
-                  <tr>
-                    <th>Id</th>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Description</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((item,i) => (
-                    <tr key={i}>
-                      <td>{item.id}</td>
-                      <td>{item.name}</td>
-                      <td>{item.price}</td>
-                      <td>{item.description}</td>
-                      <td>
-                        <Link to={"update/" + item.id} key={item.id}>
-                          <i className="fa fa-2x fa-edit text-primary" />
-                        </Link>
-                        <i
-                          className="ml-2 fa fa-2x fa-trash text-danger mr-2"
-                          // onClick={() => deleteProduct(item.id)}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+        <div className="container mt-5 mb-3">
+          <div className="card mb-3">
+            <div className="row my-3">
+              <div className="col">
+                <button
+                  className="btn btn-primary"
+                  onClick={changeSortingHandler}
+                >
+                  Sort {isSortingAscending ? "Descending" : "Ascending"}
+                </button>
+              </div>
             </div>
+          </div>
+          <div className="row">
+            {posts.map((post, i) => (
+              <div className="col-md-4" key={i}>
+                <div className="card p-3 mb-2">
+                  <div className="d-flex justify-content-between">
+                    <div className="d-flex flex-row align-items-center">
+                      <div className="ms-2 c-details d-flex justify-content-between">
+                        <h6 className="mb-0">Mailchimp</h6>{" "}
+                        <Link className="ml-5" to={`/post/update/${post.id}`}>
+                          Edit
+                        </Link>
+                        <button className="ml-5" onClick={deletePost(post.id)}>
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-5">
+                    <Link to={`posts/${post.id}`} className="heading">
+                      {post.title}
+                    </Link>
+                    <div className="mt-5">
+                      <div className="mt-3">
+                        <span className="text1">32 comments</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ) : (
